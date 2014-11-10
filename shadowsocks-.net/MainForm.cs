@@ -88,5 +88,23 @@ namespace shadowsocks_.net
         {
         }
 
+        private void MainForm_SizeChanged(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+
+                this.Visible = false;
+                notifyIcon1.Visible = true;
+                notifyIcon1.ShowBalloonTip(3500, "I'm here", "wwwwwww", ToolTipIcon.Info);
+                this.ShowInTaskbar = false;
+            }
+        }
+        private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
+        {
+            this.Visible = true;
+            this.ShowInTaskbar = true;
+            WindowState = FormWindowState.Normal;
+            this.Show();
+        }
     }
 }

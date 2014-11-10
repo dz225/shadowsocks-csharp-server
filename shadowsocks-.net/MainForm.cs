@@ -61,6 +61,7 @@ namespace shadowsocks_.net
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            notifyIcon1.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             try
             {
                 Config config = Config.Load();
@@ -92,7 +93,6 @@ namespace shadowsocks_.net
         {
             if (this.WindowState == FormWindowState.Minimized)
             {
-
                 this.Visible = false;
                 notifyIcon1.Visible = true;
                 notifyIcon1.ShowBalloonTip(3500, "I'm here", "wwwwwww", ToolTipIcon.Info);

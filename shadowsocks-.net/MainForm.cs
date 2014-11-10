@@ -9,14 +9,36 @@ using System.Windows.Forms;
 
 namespace shadowsocks_.net
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         Config config;
         Server server;
 
-        public Form1()
+        public static MainForm instanse = null;
+
+        public MainForm()
         {
+            instanse = this;
             InitializeComponent();
+        }
+
+        public static MainForm GetInstance()
+        {
+            return instanse;
+        }
+
+        public delegate void FlushLog(string str); 
+        public void Log(string str)
+        {
+            if (this.label10.InvokeRequired)
+            {
+                FlushLog fc = new FlushLog(Log); 
+                this.Invoke(fc, new object[1] { str});
+            }
+            else
+            {
+                this.label10.Text = str;
+            }
         }
 
         private void reload(Config config)
@@ -29,6 +51,14 @@ namespace shadowsocks_.net
             server.Start();
         }
 
+        private void SetConfigLab(Config config)
+        {
+            label5.Text = config.server;
+            label6.Text = config.server_port.ToString();
+            label7.Text = config.method;
+            label8.Text = config.password;
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             try
@@ -36,6 +66,7 @@ namespace shadowsocks_.net
                 Config config = Config.Load();
                 this.config = config;
                 reload(config);
+                SetConfigLab(config);
                 this.Hide();
             }
             catch (FormatException)

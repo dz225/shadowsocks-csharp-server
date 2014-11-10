@@ -78,7 +78,7 @@ namespace shadowsocks_.net
         public Socket remote;
         public Socket connection;
         // Size of receive buffer.
-        public const int BufferSize = 1500;
+        public const int BufferSize = 2048;
         // remote receive buffer
         public byte[] remoteBuffer = new byte[BufferSize];
         // connection receive buffer
@@ -119,40 +119,34 @@ namespace shadowsocks_.net
 
         public void Close()
         {
-            if (encryptor == null)
-            {
-                return;
-            }
-            else
-            {
-                encryptor.Dispose();
-                encryptor = null;
-            }
-
+            encryptor.Dispose();
             Console.WriteLine("close:" + connection.RemoteEndPoint.ToString());
             
             if (connection != null)
             {
                 try
                 {
-                    connection.Shutdown(SocketShutdown.Send);
+                    connection.Shutdown(SocketShutdown.Both);
                 }
                 catch (SocketException)
                 {
+                    //
                 }
             }
             if (remote != null)
             {
                 try
                 {
-                    remote.Shutdown(SocketShutdown.Send);
+                    remote.Shutdown(SocketShutdown.Both);
                 }
                 catch (SocketException)
                 {
+                    //
                 }
             }
         }
 
+        //Single thread
         private void handshakeReceiveCallback(IAsyncResult ar)
         {
             try
@@ -261,17 +255,25 @@ namespace shadowsocks_.net
 
         public void GetHostEntryCallback(IAsyncResult ar)
         {
-            DNSCbContext ct = (DNSCbContext)ar.AsyncState;
-            IPHostEntry ipHostInfo = Dns.EndGetHostEntry(ar);
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            DNSCache.GetInstence().Put(ct.host, ipAddress);
-            IPEndPoint remoteEP = new IPEndPoint(ipAddress, ct.port);
+            try
+            {
+                DNSCbContext ct = (DNSCbContext)ar.AsyncState;
+                IPHostEntry ipHostInfo = Dns.EndGetHostEntry(ar);
+                IPAddress ipAddress = ipHostInfo.AddressList[0];
+                DNSCache.GetInstence().Put(ct.host, ipAddress);
+                IPEndPoint remoteEP = new IPEndPoint(ipAddress, ct.port);
 
-            remote = new Socket(ipAddress.AddressFamily,
-                SocketType.Stream, ProtocolType.Tcp);
+                remote = new Socket(ipAddress.AddressFamily,
+                    SocketType.Stream, ProtocolType.Tcp);
 
-            remote.BeginConnect(remoteEP,
-                new AsyncCallback(remoteConnectCallback), null);
+                remote.BeginConnect(remoteEP,
+                    new AsyncCallback(remoteConnectCallback), null);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                this.Close();
+            }
         }
 
         private void remoteConnectCallback(IAsyncResult ar)
@@ -283,6 +285,8 @@ namespace shadowsocks_.net
 
                 Console.WriteLine("Connected to {0}",
                     remote.RemoteEndPoint.ToString());
+
+                MainForm.GetInstance().Log("Connected to " + remote.RemoteEndPoint.ToString());
 
                 connection.BeginReceive(connetionBuffer, 0, BufferSize, 0,
                     new AsyncCallback(ConnectionReceiveCallback), null);
@@ -296,14 +300,13 @@ namespace shadowsocks_.net
             }
         }
 
+        //Callback Runing at other thread
         private void ConnectionReceiveCallback(IAsyncResult ar)
         {
             try
             {
                 int bytesRead = connection.EndReceive(ar);
                 Console.WriteLine("bytesRead from client: " + bytesRead.ToString());
-                if (encryptor == null)
-                    return;
                 if (bytesRead > 0)
                 {
                     byte[] buf = encryptor.Decrypt(connetionBuffer, bytesRead);
@@ -328,8 +331,6 @@ namespace shadowsocks_.net
             {
                 int bytesRead = remote.EndReceive(ar);
                 Console.WriteLine("bytesRead from remote: " + bytesRead.ToString());
-                if (encryptor == null)
-                    return;
                 if (bytesRead > 0)
                 {
                     byte[] buf = encryptor.Encrypt(remoteBuffer, bytesRead);
@@ -355,7 +356,6 @@ namespace shadowsocks_.net
             {
                 int bytesSend = remote.EndSend(ar);
                 Console.WriteLine("bytesSend to remote: " + bytesSend.ToString());
-
                 connection.BeginReceive(this.connetionBuffer, 0, BufferSize, 0,
                     new AsyncCallback(ConnectionReceiveCallback), null);
             }
@@ -372,7 +372,6 @@ namespace shadowsocks_.net
             {
                 int bytesSend = connection.EndSend(ar);
                 Console.WriteLine("bytesSend to client: " + bytesSend.ToString());
-
                 remote.BeginReceive(this.remoteBuffer, 0, BufferSize, 0,
                     new AsyncCallback(RemoteReceiveCallback), null);
             }

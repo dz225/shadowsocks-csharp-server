@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace shadowsocks_.net
 {
-    //Non thread safe wwww
+    //thread safe Now wwwwwwwwwwwwwwwww
     class DNSCbContext
     {
         public string host;
@@ -22,7 +22,6 @@ namespace shadowsocks_.net
     {
         static DNSCache instence = null;
         Dictionary<string, DNSResult> result = new Dictionary<string, DNSResult>();
-        private Mutex mut = new Mutex();
         public static DNSCache GetInstence()
         {
             if (instence == null)
@@ -34,26 +33,25 @@ namespace shadowsocks_.net
 
         public IPAddress Get(string host)
         {
-            mut.WaitOne();
-            CleanUp();
-            if (result.ContainsKey(host))
+            lock (this)
             {
-                IPAddress ipaddress = result[host].ipaddress;
-                mut.ReleaseMutex();
-                return ipaddress;
+                CleanUp();
+                if (result.ContainsKey(host))
+                {
+                    IPAddress ipaddress = result[host].ipaddress;
+                    return ipaddress;
+                }
             }
-            mut.ReleaseMutex();
             return null;
         }
 
         public void Put(string host, IPAddress ipAddress)
         {
-            mut.WaitOne();
+            lock (this)
             {
                 DNSResult dnsresult = new DNSResult(ipAddress);
                 result[host] = dnsresult;
             }
-            mut.ReleaseMutex();
         }
 
         public void CleanUp()
@@ -72,7 +70,6 @@ namespace shadowsocks_.net
                 result.Remove(a);
             }
         }
-        
     }
 
     class DNSResult
@@ -80,6 +77,9 @@ namespace shadowsocks_.net
         public DateTime last_used = DateTime.Now;
         public IPAddress ipaddress;
 
-        public DNSResult(IPAddress _ipaddress){ ipaddress = _ipaddress; }
+        public DNSResult(IPAddress _ipaddress)
+        {
+            ipaddress = _ipaddress;
+        }
     }
 }

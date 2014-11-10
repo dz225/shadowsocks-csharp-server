@@ -31,20 +31,35 @@ namespace shadowsocks_csharp
         private IntPtr decryptCTX;
         private static Dictionary<string, byte[]> cachedKeys = new Dictionary<string, byte[]>();
         private static Dictionary<string, Cipher> cachedCiphers = new Dictionary<string, Cipher>();
-        private Object LockObj = new object();
+        private Object encryptLockObj = new object();
+        private Object decryptLockObj = new object();
+        private bool dispose = false;
         public void Dispose()
         {
-            if (encryptCTX != IntPtr.Zero)
+            lock (this)
             {
-                Native.EVP_CIPHER_CTX_cleanup(encryptCTX);
-                Native.OPENSSL_free(encryptCTX);
-                encryptCTX = IntPtr.Zero;
+                if (dispose)
+                    return;
+                dispose = true;
             }
-            if (decryptCTX != IntPtr.Zero)
+
+            lock (encryptLockObj)
             {
-                Native.EVP_CIPHER_CTX_cleanup(decryptCTX);
-                Native.OPENSSL_free(decryptCTX);
-                decryptCTX = IntPtr.Zero;
+                if (encryptCTX != IntPtr.Zero)
+                {
+                    Native.EVP_CIPHER_CTX_cleanup(encryptCTX);
+                    Native.OPENSSL_free(encryptCTX);
+                    encryptCTX = IntPtr.Zero;
+                }
+            }
+            lock (decryptLockObj)
+            {
+                if (decryptCTX != IntPtr.Zero)
+                {
+                    Native.EVP_CIPHER_CTX_cleanup(decryptCTX);
+                    Native.OPENSSL_free(decryptCTX);
+                    decryptCTX = IntPtr.Zero;
+                }
             }
         }
 
@@ -250,8 +265,12 @@ namespace shadowsocks_csharp
 
         public byte[] Encrypt(byte[] buf, int length)
         {
-            lock (LockObj)
+            lock (encryptLockObj)
             {
+                if (dispose)
+                {
+                    throw new Exception("encryptCTX has been Dispose");
+                }
                 switch (method)
                 {
                     case "table":
@@ -268,8 +287,12 @@ namespace shadowsocks_csharp
         }
         public byte[] Decrypt(byte[] buf, int length)
         {
-            lock (LockObj)
+            lock (decryptLockObj)
             {
+                if (dispose)
+                {
+                    throw new Exception("decryptCTX has been Dispose");
+                }
                 switch (method)
                 {
                     case "table":

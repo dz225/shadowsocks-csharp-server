@@ -203,7 +203,7 @@ namespace shadowsocks_.net
                     stage = 4;
                     //recv addr
                     connection.BeginReceive(this.connetionBuffer, 0, buff[0], 0,
-                        new AsyncCallback(handshakeReceiveCallback), null);
+                        new AsyncCallback(handshakeReceiveCallback), ar.AsyncState);
                 }
                 else if (stage == 4)
                 {
@@ -214,10 +214,16 @@ namespace shadowsocks_.net
                         //ipv4
                         destAddr = string.Format("{0:D}.{1:D}.{2:D}.{3:D}", buff[0], buff[1], buff[2], buff[3]);
                     }
-                    else
+                    else if (3 == (char)ar.AsyncState)
                     {
                         //ipv6 url
                         destAddr = ASCIIEncoding.Default.GetString(buff);
+                    }
+                    else
+                    {
+                        //ipv6 url
+                        destAddr = string.Format("[{0:x2}{1:x2}:{2:x2}{3:x2}:{4:x2}{5:x2}:{6:x2}{7:x2}:{8:x2}{9:x2}:{10:x2}{11:x2}:{12:x2}{13:x2}:{14:x2}{15:x2}]"
+                            , buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7], buff[8], buff[9], buff[10], buff[11], buff[12], buff[13], buff[14], buff[15]);
                     }
                     stage = 5;
                     //recv port

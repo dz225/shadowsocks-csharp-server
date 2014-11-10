@@ -31,8 +31,8 @@ namespace shadowsocks_csharp
         private IntPtr decryptCTX;
         private static Dictionary<string, byte[]> cachedKeys = new Dictionary<string, byte[]>();
         private static Dictionary<string, Cipher> cachedCiphers = new Dictionary<string, Cipher>();
-        private Object encryptLockObj = new object();
-        private Object decryptLockObj = new object();
+        private static Object encryptLockObj = new object();
+        private static Object decryptLockObj = new object();
         private bool dispose = false;
         public void Dispose()
         {

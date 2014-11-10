@@ -174,7 +174,7 @@ namespace shadowsocks_.net
                         //type of ipv4
                         stage = 4;
                         connection.BeginReceive(this.connetionBuffer, 0, 4, 0,
-                            new AsyncCallback(handshakeReceiveCallback), null);
+                            new AsyncCallback(handshakeReceiveCallback), addrtype);
 
                     }
                     else if (addrtype == 3)
@@ -182,14 +182,14 @@ namespace shadowsocks_.net
                         //type of url
                         stage = 3;
                         connection.BeginReceive(this.connetionBuffer, 0, 1, 0,
-                            new AsyncCallback(handshakeReceiveCallback), null);
+                            new AsyncCallback(handshakeReceiveCallback), addrtype);
                     }
                     else if (addrtype == 4)
                     {
                         //type of ipv6
                         stage = 4;
                         connection.BeginReceive(this.connetionBuffer, 0, 16, 0,
-                            new AsyncCallback(handshakeReceiveCallback), null);
+                            new AsyncCallback(handshakeReceiveCallback), addrtype);
                     }
                     else
                     {
@@ -209,8 +209,18 @@ namespace shadowsocks_.net
                 {
                     //addr
                     byte[] buff = encryptor.Decrypt(this.connetionBuffer, bytesRead);
-                    destAddr = ASCIIEncoding.Default.GetString(buff);
+                    if (1 == (char)ar.AsyncState)
+                    {
+                        //ipv4
+                        destAddr = string.Format("{0:D}.{1:D}.{2:D}.{3:D}", buff[0], buff[1], buff[2], buff[3]);
+                    }
+                    else
+                    {
+                        //ipv6 url
+                        destAddr = ASCIIEncoding.Default.GetString(buff);
+                    }
                     stage = 5;
+                    //recv port
                     connection.BeginReceive(this.connetionBuffer, 0, 2, 0,
                         new AsyncCallback(handshakeReceiveCallback), null);
                 }
@@ -255,9 +265,9 @@ namespace shadowsocks_.net
 
         public void GetHostEntryCallback(IAsyncResult ar)
         {
+            DNSCbContext ct = (DNSCbContext)ar.AsyncState;
             try
-            {
-                DNSCbContext ct = (DNSCbContext)ar.AsyncState;
+            { 
                 IPHostEntry ipHostInfo = Dns.EndGetHostEntry(ar);
                 IPAddress ipAddress = ipHostInfo.AddressList[0];
                 DNSCache.GetInstence().Put(ct.host, ipAddress);
@@ -271,7 +281,7 @@ namespace shadowsocks_.net
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine("Unknow Host " + ct.host);
                 this.Close();
             }
         }

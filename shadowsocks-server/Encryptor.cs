@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using OpenSSL.Core;
 using OpenSSL.Crypto;
 using System.Runtime.InteropServices;
-using shadowsocks_.net;
+using shadowsocks;
 
 namespace shadowsocks_csharp
 {

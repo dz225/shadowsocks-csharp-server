@@ -11,7 +11,7 @@ using System.Timers;
 
 
 
-namespace shadowsocks_.net
+namespace shadowsocks
 {
     class Server
     {

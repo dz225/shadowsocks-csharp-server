@@ -4,7 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 
-namespace shadowsocks_.net
+namespace shadowsocks
 {
     //thread safe Now wwwwwwwwwwwwwwwww
     class DNSCbContext

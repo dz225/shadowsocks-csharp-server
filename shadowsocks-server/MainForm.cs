@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Windows.Forms;
 
-namespace shadowsocks_.net
+namespace shadowsocks
 {
     public partial class MainForm : Form
     {

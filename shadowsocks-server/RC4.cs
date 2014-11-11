@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace shadowsocks_.net
+namespace shadowsocks
 {
     public class RC4
     {

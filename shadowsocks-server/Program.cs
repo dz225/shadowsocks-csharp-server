@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace shadowsocks_.net
+namespace shadowsocks
 {
     static class Program
     {

@@ -1,4 +1,4 @@
-﻿namespace shadowsocks_.net
+﻿namespace shadowsocks
 {
     partial class MainForm
     {
@@ -157,7 +157,7 @@
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
-            this.Text = "ShadowSock ServerSide .Net";
+            this.Text = "Shadowsocks Server";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
             this.ResumeLayout(false);

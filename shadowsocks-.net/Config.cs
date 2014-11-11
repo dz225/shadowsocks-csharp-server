@@ -46,7 +46,7 @@ namespace shadowsocks_.net
                     server = "127.0.0.1",
                     server_port = 8388,
                     password = "barfoo!",
-                    method = "table",
+                    method = "aes-128-cfb",
                     isDefault = true
                 };
             }

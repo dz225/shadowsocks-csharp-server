@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define DEBUG
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Sockets;
@@ -6,6 +8,7 @@ using System.Net;
 using shadowsocks_csharp;
 using System.Threading;
 using System.Timers;
+
 
 
 namespace shadowsocks_.net
@@ -299,8 +302,10 @@ namespace shadowsocks_.net
                 // Complete the connection.
                 remote.EndConnect(ar);
 
+#if !DEBUG
                 Console.WriteLine("Connected to {0}",
                     remote.RemoteEndPoint.ToString());
+#endif
 
                 MainForm.GetInstance().Log("Connected to " + remote.RemoteEndPoint.ToString());
 
@@ -322,7 +327,9 @@ namespace shadowsocks_.net
             try
             {
                 int bytesRead = connection.EndReceive(ar);
+#if !DEBUG
                 Console.WriteLine("bytesRead from client: " + bytesRead.ToString());
+#endif
                 if (bytesRead > 0)
                 {
                     byte[] buf = encryptor.Decrypt(connetionBuffer, bytesRead);
@@ -346,7 +353,9 @@ namespace shadowsocks_.net
             try
             {
                 int bytesRead = remote.EndReceive(ar);
+#if !DEBUG
                 Console.WriteLine("bytesRead from remote: " + bytesRead.ToString());
+#endif
                 if (bytesRead > 0)
                 {
                     byte[] buf = encryptor.Encrypt(remoteBuffer, bytesRead);
@@ -371,7 +380,9 @@ namespace shadowsocks_.net
             try
             {
                 int bytesSend = remote.EndSend(ar);
+#if !DEBUG
                 Console.WriteLine("bytesSend to remote: " + bytesSend.ToString());
+#endif
                 connection.BeginReceive(this.connetionBuffer, 0, BufferSize, 0,
                     new AsyncCallback(ConnectionReceiveCallback), null);
             }
@@ -387,7 +398,9 @@ namespace shadowsocks_.net
             try
             {
                 int bytesSend = connection.EndSend(ar);
+#if !DEBUG
                 Console.WriteLine("bytesSend to client: " + bytesSend.ToString());
+#endif
                 remote.BeginReceive(this.remoteBuffer, 0, BufferSize, 0,
                     new AsyncCallback(RemoteReceiveCallback), null);
             }

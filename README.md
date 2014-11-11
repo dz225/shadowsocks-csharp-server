@@ -23,7 +23,6 @@ Edit config.json
 Encrypt method
 -----------------
  
-    "table",
     "rc4",
     "aes-256-cfb",
     "aes-192-cfb",

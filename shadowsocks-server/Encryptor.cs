@@ -32,7 +32,6 @@ namespace shadowsocks_csharp
         private static Dictionary<string, byte[]> cachedKeys = new Dictionary<string, byte[]>();
         private static Dictionary<string, Cipher> cachedCiphers = new Dictionary<string, Cipher>();
         private Object encryptLockObj = new object();
-        private Object decryptLockObj = new object();
         private bool dispose = false;
         public void Dispose()
         {
@@ -51,9 +50,6 @@ namespace shadowsocks_csharp
                     Native.OPENSSL_free(encryptCTX);
                     encryptCTX = IntPtr.Zero;
                 }
-            }
-            lock (decryptLockObj)
-            {
                 if (decryptCTX != IntPtr.Zero)
                 {
                     Native.EVP_CIPHER_CTX_cleanup(decryptCTX);
@@ -287,7 +283,7 @@ namespace shadowsocks_csharp
         }
         public byte[] Decrypt(byte[] buf, int length)
         {
-            lock (decryptLockObj)
+            lock (encryptLockObj)
             {
                 if (dispose)
                 {
